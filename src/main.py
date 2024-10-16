@@ -17,9 +17,9 @@ def to_gray(frame):
 
     return gray_frame
 
-def map_to_ascii(gray_frame, mapping):
-    height = gray_frame.shape[0]
-    width = gray_frame.shape[1]
+def map_to_ascii(gray_frame, mapping,):
+    height = int(gray_frame.shape[0])
+    width = int(gray_frame.shape[1] )
     ascii_art = ""
 
     for y in range(height):
@@ -31,28 +31,53 @@ def map_to_ascii(gray_frame, mapping):
 
     return ascii_art
 
+def resize_frame(frame, resize_factor):
+    height = frame.shape[0]
+    width = frame.shape[1]
+
+    resize_height = int(height / resize_factor)
+    resize_width = int(width / resize_factor)
+    return cv2.resize(frame, (resize_height, resize_width))
+
 
 def main():
     vid_path = "../video/example.mp4"
-    mapping = ['@', '#', '&', '%', '*', ':', '.', ' '] 
+    mapping = [' ', '.', ':', '*', '%', '&', '#', '@']
     cap = cv2.VideoCapture(vid_path)
         
-    scale_percent = 50
+    frame_resize_factor = 5
+    
+    frame_width = 800
+    frame_height = 800
+    frame_rate = 30
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    
+    out = cv2.VideoWriter('output_video.mp4', cv2.VideoWriter_fourcc(*'mp4v'), frame_rate, (frame_width, frame_height))
+
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
-        
-        width = int(frame.shape[1] * scale_percent / 100)
-        height = int(frame.shape[0] * scale_percent / 100)
-        resized_frame = cv2.resize(frame, (width, height))
-        print(resized_frame.shape)
-        
+    
+        resized_frame = resize_frame(frame, frame_resize_factor)
         gray_frame = to_gray(resized_frame)
         ascii_art = map_to_ascii(gray_frame, mapping)
-        print(ascii_art)
+
+        ascii_frame = np.zeros((frame_height, frame_width, 3), dtype=np.uint8)
+        for i, line in enumerate(ascii_art.split("\n")):
+            y = 15 + i * 15
+            cv2.putText(ascii_frame, line, (int(frame_width/2), y), font, 0.4, (255, 255, 255), 1)
+
+        out.write(ascii_frame)
+        cv2.imshow('frame', ascii_frame)
+        if cv2.waitKey(10) == ord('q'):
+            break
+
         
     cap.release()
+    out.release()
+    cv2.destroyAllWindows()
+        
 
 if __name__ == "__main__":
     main()
