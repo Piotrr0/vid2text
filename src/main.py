@@ -17,7 +17,7 @@ def to_gray(frame):
 
     return gray_frame
 
-def map_to_ascii(gray_frame, mapping,):
+def map_to_ascii(gray_frame, mapping):
     height = int(gray_frame.shape[0])
     width = int(gray_frame.shape[1] )
     ascii_art = ""
